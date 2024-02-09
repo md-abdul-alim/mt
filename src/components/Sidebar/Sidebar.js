@@ -63,6 +63,7 @@ const admin = [
     icon: <LineStyleIcon />,
     children: [
       { label: "MRF", link: "/app/mrc" },
+      { label: "MRF Table", link: "/app/mrc-table" },
     ],
   },
 ];

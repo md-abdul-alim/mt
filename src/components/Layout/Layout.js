@@ -37,6 +37,7 @@ import LineNameCategory from "../../pages/machineMovement/LineNameCategory";
 
 //MRC
 import MRC from "../../pages/MRC/MRC";
+import MRCTable from "../../pages/MRC/MRCTable";
 
 // context
 import { useLayoutState } from "../../context/LayoutContext";
@@ -84,6 +85,7 @@ function Layout(props) {
 
             {/* MRC */}
             <Route path="/app/mrc" component={MRC} />
+            <Route path="/app/mrc-table" component={MRCTable} />
 
             <Route path="/app/ui/maps" component={Maps} />
             <Route path="/app/ui/icons" component={Icons} />
