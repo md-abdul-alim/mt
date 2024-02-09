@@ -410,12 +410,23 @@ const MachineForm = (props) => {
             <>
               {value?.map((swlItem, swlIndex) => {
                 const isLastItem = swlIndex === value.length - 1;
+                const isOddIndex = swlIndex % 2 === 1;
+                const gridContainerClassName = isOddIndex
+                  ? "gray-background"
+                  : "";
                 return (
                   <div key={swlIndex}>
                     {/* Check if "swl" and its elements exist before accessing them */}
                     {swlItem && (
                       <>
-                        <Grid container spacing={3}>
+                        <Grid
+                          container
+                          spacing={3}
+                          style={{
+                            backgroundColor: `${isOddIndex ? "#89898921" : ""}`,
+                            borderRadius: `${isOddIndex ? "5px" : ""}`
+                          }}
+                        >
                           <Grid item xs={12} md={4}>
                             <Autocomplete
                               id={`swl[${swlIndex}].machine_type`}
@@ -604,7 +615,7 @@ const MachineForm = (props) => {
                     }
                     onChange={(_event, unit_name) => {
                       formik.setFieldValue(
-                        "plant_name",
+                        "unit_name",
                         unit_name ? unit_name.id : null
                       );
                     }}
@@ -636,13 +647,14 @@ const MachineForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      nameList.find(
+                      plants.find(
                         (line) => line.id === formik.values.plant_name
                       ) ||
                       formik.values.plant_name ||
                       null
                     }
                     onChange={(_event, plant) => {
+                      console.log("🚀 ~ MachineForm ~ plant:", plant);
                       formik.setFieldValue(
                         "plant_name",
                         plant ? plant.id : null
@@ -676,7 +688,7 @@ const MachineForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      nameList.find(
+                      plants.find(
                         (line) => line.id === formik.values.buyer_name
                       ) ||
                       formik.values.buyer_name ||
