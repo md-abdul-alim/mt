@@ -5,8 +5,8 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { makeStyles } from "@material-ui/core/styles";
 import MuiDialogActions from "@material-ui/core/DialogActions";
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import {
   CircularProgress,
@@ -19,7 +19,7 @@ import {
   InputLabel,
   FormHelperText,
   MenuItem,
-  Select as MuiSelect
+  Select as MuiSelect,
 } from "@material-ui/core";
 
 const style = makeStyles({
@@ -36,8 +36,6 @@ const style = makeStyles({
   },
 });
 
-
-
 const DialogActions = withStyles((theme) => ({
   root: {
     margin: 0,
@@ -48,16 +46,15 @@ const DialogActions = withStyles((theme) => ({
 var initialValues = {
   id: 0,
   line: "",
-  machine: ""
+  machine: "",
 };
-
 
 const AddMachineToLineForm = (props) => {
   const [lineNames, setLineNames] = useState([]);
-  const [MachineList, setMachineList] =useState([]);
-  const [Machines, setMachines] =useState([]);
+  const [MachineList, setMachineList] = useState([]);
+  const [Machines, setMachines] = useState([]);
 
-  const unit = localStorage.getItem("unit")
+  const unit = localStorage.getItem("unit");
 
   const { addOrEdit } = props;
 
@@ -81,37 +78,43 @@ const AddMachineToLineForm = (props) => {
   //   setLines(lineNames.filter(line => line.unit===formik.values.unit))
   // }
 
-  const machineFilter= ()=>{
-    setMachines(MachineList.map(obj => {
-      return {
-        id: obj.id,
-        name: obj.factory_serial_no
-      }
-    }))
-  }
+  const machineFilter = () => {
+    setMachines(
+      MachineList.map((obj) => {
+        return {
+          id: obj.id,
+          name: obj.factory_serial_no,
+        };
+      })
+    );
+  };
 
   useEffect(() => {
     async function getLines() {
-        const response = await fetch("/api/production/line/list/", {headers: {
+      const response = await fetch("/api/production/line/list/", {
+        headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-        },});
-        const body = await response.json();
-        setLineNames(body);
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      const body = await response.json();
+      setLineNames(body);
     }
     getLines();
     async function getMachineNameList() {
-        const response = await fetch("/api/ideal/machine/name/list/", {headers: {
+      const response = await fetch("/api/ideal/machine/name/list/", {
+        headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-        },});
-        const body = await response.json();
-        setMachineList(body);
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      const body = await response.json();
+      setMachineList(body);
     }
     getMachineNameList();
-}, []);
+  }, []);
 
   useEffect(() => {
     // lineFilter();
@@ -120,34 +123,38 @@ const AddMachineToLineForm = (props) => {
 
   return (
     <Form onSubmit={formik.handleSubmit}>
-        <Grid container alignItems="flex-start" spacing={2}>
-
-            <Grid item md={12} sm={12} xs={12}>
-            <Autocomplete
-                  id="line"
-                  options={lineNames}
-                  hide = "true"
-                  renderInput={params => (
-                  <TextField {...params} 
-                    label="Line" 
-                    variant="outlined" 
-                    error={formik.touched.line && Boolean(formik.errors.line)}
-                    helperText={formik.touched.line && formik.errors.line}
-                  />
-                  )}
-                  getOptionLabel={option => option.name || ''}
-                  getOptionSelected={(option, value) => option.id === value.id}
-                  value={lineNames.find((line) => line.id === formik.values.line) || formik.values.line || null}
-                  onChange={(_event, line) => {
-                    formik.setFieldValue("line", line ? line.id : null);
-                  }}
-                  onBlur={formik.handleBlur}
-                  // multiple='true'
+      <Grid container alignItems="flex-start" spacing={2}>
+        <Grid item md={12} sm={12} xs={12}>
+          <Autocomplete
+            id="line"
+            options={lineNames}
+            hide="true"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Line"
+                variant="outlined"
+                error={formik.touched.line && Boolean(formik.errors.line)}
+                helperText={formik.touched.line && formik.errors.line}
               />
-            </Grid>
+            )}
+            getOptionLabel={(option) => option.name || ""}
+            getOptionSelected={(option, value) => option.id === value.id}
+            value={
+              lineNames.find((line) => line.id === formik.values.line) ||
+              formik.values.line ||
+              null
+            }
+            onChange={(_event, line) => {
+              formik.setFieldValue("line", line ? line.id : null);
+            }}
+            onBlur={formik.handleBlur}
+            // multiple='true'
+          />
+        </Grid>
 
-            <Grid item md={12} sm={12} xs={12}>
-              {/* <Autocomplete
+        <Grid item md={12} sm={12} xs={12}>
+          {/* <Autocomplete
                   id="machine"
                   options={Machines}
                   // disabled = {disableFabric}
@@ -164,39 +171,42 @@ const AddMachineToLineForm = (props) => {
                   // multiple='true'
               /> */}
 
-                <Autocomplete
-                    id="machine"
-                    options={Machines}
-                    hide = "true"
-                    renderInput={params => (
-                    <TextField {...params} 
-                      label="Factory Serial No" 
-                      variant="outlined"
-                      error={formik.touched.machine && Boolean(formik.errors.machine)}
-                      helperText={formik.touched.machine && formik.errors.machine}
-                    />
-                    )}
-                    getOptionLabel={option => option.name || ''}
-                    getOptionSelected={(option, value) => option.id === value.id}
-                    value={Machines.find((machine) => machine.id === formik.values.machine) || formik.values.machine || null}
-                    onChange={(_event, machine) => {
-                      formik.setFieldValue("machine", machine ? machine.id : null);
-                    }}
-                    onBlur={formik.handleBlur}
-                    // multiple='true'
-                />
-            </Grid>
+          <Autocomplete
+            id="machine"
+            options={Machines}
+            hide="true"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Factory Serial No"
+                variant="outlined"
+                error={formik.touched.machine && Boolean(formik.errors.machine)}
+                helperText={formik.touched.machine && formik.errors.machine}
+              />
+            )}
+            getOptionLabel={(option) => option.name || ""}
+            getOptionSelected={(option, value) => option.id === value.id}
+            value={
+              Machines.find(
+                (machine) => machine.id === formik.values.machine
+              ) ||
+              formik.values.machine ||
+              null
+            }
+            onChange={(_event, machine) => {
+              formik.setFieldValue("machine", machine ? machine.id : null);
+            }}
+            onBlur={formik.handleBlur}
+            // multiple='true'
+          />
         </Grid>
+      </Grid>
 
-        <Grid item md={12} sm={12} xs={12}>
-          <div className={classes.wrapper}>
-            <Controls.Button
-              type="submit"
-              text="Add"
-              style={{'width': '100%'}}
-            />
-          </div>
-        </Grid> 
+      <Grid item md={12} sm={12} xs={12}>
+        <div className={classes.wrapper}>
+          <Controls.Button type="submit" text="Add" style={{ width: "100%" }} />
+        </div>
+      </Grid>
     </Form>
   );
 };

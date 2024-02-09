@@ -1,23 +1,47 @@
-import React, { useState, useEffect } from "react";
-import { useForm, Form } from "../../../components/Form/useForm";
-import Controls from "../../../components/Controls/Controls";
-import { useFormik } from "formik";
-import * as yup from "yup";
-import { makeStyles } from "@material-ui/core/styles";
-import { TableForm } from "../../../components/Table/TableForm";
 import {
-  InputLabel,
-  Icon,
-  Grid,
-  Radio,
-  RadioGroup,
-  FormControl,
-  MenuItem,
-  TextField,
+  Box,
   CircularProgress,
-  FormHelperText,
+  Grid,
+  IconButton,
+  MuiThemeProvider,
+  TableCell,
+  TextField,
+  Tooltip,
+  createMuiTheme,
 } from "@material-ui/core";
-import { VerticalAlignCenter } from "@material-ui/icons";
+import React, { useEffect, useState } from "react";
+import * as Yup from "yup";
+import { Form } from "../../../components/Form/useForm";
+import { useFormik } from "formik";
+import DeleteIcon from "@material-ui/icons/Delete";
+import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { makeStyles } from "@material-ui/core/styles";
+import MUIDataTable from "mui-datatables";
+import { CustomCircularProgress } from "../../../components/Progress/CustomCircularProgress";
+import Controls from "../../../components/Controls/Controls";
+import BreadCrumb from "../../../components/BreadCrumb/BreadCrumb";
+import { Autocomplete } from "@material-ui/lab";
+
+const initialFValues = {
+  style: "",
+  unit_name: 1,
+  plant_name: 1,
+  buyer_name: 1,
+  swm: [
+    {
+      line: 1,
+      start_date: new Date(),
+      end_date: new Date(),
+      swl: [
+        {
+          machine_type: 1,
+          machine_quantity: 1,
+        },
+      ],
+    },
+  ],
+};
 
 const style = makeStyles({
   wrapper: {
@@ -33,161 +57,247 @@ const style = makeStyles({
   },
 });
 
-var initialFValues = {
-  id: 0,
-  // name: "",
-  model_no: "",
-  parent_unit: "",
-  category: "",
-  type: "",
-  brand: "",
-  supplier: "",
-  acquisition_value: "",
-  acquisition_date: new Date(),
-  warranty_start: new Date(),
-  warranty_end: new Date(),
-  warranty_details: "",
-  factory_serial_no: "",
-  manufacture_serial_no: "",
-  location: "",
-  air_consumption: "",
-  steam_consumption: "",
-  watt_consumption: "",
-  start_date: new Date(),
-  description: "",
-  remark: "",
-  swm: [
-    {
-      id: 0,
-      line: "4",
-      start_date: "2",
-      end_date: "i"
-    },
-  ]
-};
-
-
 const MachineForm = (props) => {
-  const [categories, setCategories] = useState([]);
-  const [types, setTypes] = useState([]);
-  const [units, setUnits] = useState([]);
-  const [errorMessage, setErrorMessage ] = useState("")
-
-
-
   const { addOrEdit, recordForEdit, MachineList } = props;
+  const getMuiTheme = () =>
+    createMuiTheme({
+      overrides: {
+        MUIDataTableToolbar: {
+          root: {
+            backgroundColor: "#50d07d",
+            color: "#fff",
+          },
+          icon: {
+            color: "#fff",
+            "&:hover": {
+              color: "#0000ff",
+            },
+          },
+        },
+        MuiTableCell: {
+          root: {
+            padding: "2px",
+          },
+        },
+      },
 
+      typography: {
+        fontFamily: `"Roboto", "Helvetica", "Arial", sans-serif`,
+        fontSize: 14,
+        fontWeightLight: 300,
+        fontWeightRegular: 400,
+        fontWeightMedium: 500,
+      },
+    });
+  const [typeList, setTypeList] = useState([]);
+  const [nameList, setNameList] = useState([]);
+  const [productionLine, setProductionLine] = useState([]);
+  const [plants, setPlants] = useState([]);
+  const [buyers, setbuyers] = useState([]);
+  const [units, setUnits] = useState([]);
 
+  // const { addOrEdit, recordForEdit, MachineList } = props;
 
-  function duplicateModelNoCheck(list, value){
-    var check = true
-    if(list.length === 0){
-      return check
-    }else{
-      for (let i=0; i< list.length; i ++){
-        if(recordForEdit){
-          if( recordForEdit.manufacture_serial_no === value){
-            return true
-          }else{
-            if(value === list[i].manufacture_serial_no){       
-              return check = false
-            }
-          }
-        }else{
-          if(value === list[i].manufacture_serial_no){       
-            return check = false
-          }
-        }
-      }
-      return check;
-    }
-  }
-
-  const validationSchema = yup.object().shape({
-    model_no: yup.string().required("Model No is required"),
-    parent_unit: yup.string().required("Parent Unit is required"),
-    category: yup.string().required("Please select a category"),
-    type: yup.string().required("Type is required"),
-    brand: yup.string().required("Brand is required"),
-    factory_serial_no: yup.string().required("Factory Serial No is required"),
-    location: yup.string(),
-    air_consumption: yup.string(),
-    steam_consumption: yup.string(),
-    watt_consumption: yup.string(),
-    warranty_details: yup.string(),
-    manufacture_serial_no: yup.string().required("Manufacture serial no is required")
-        .test("Unique", "Manufacture serial no must be unique", (values) => {
-      return duplicateModelNoCheck(MachineList, values)
-    }),
-    supplier: yup.string(),
-    acquisition_value: yup.string(),
-    description: yup.string(),
-    remark: yup.string(),
+  const validationSchema = Yup.object().shape({
+    style: Yup.string().required("Style is required"),
+    unit_name: Yup.number().required("Unit name is required"),
+    plant_name: Yup.number().required("Plant name is required"),
+    buyer_name: Yup.number().required("Buyer name is required"),
+    swm: Yup.array().of(
+      Yup.object().shape({
+        line: Yup.number().required("Line is required"),
+        start_date: Yup.date().required("Start date is required"),
+        end_date: Yup.date().required("End date is required"),
+        swl: Yup.array().of(
+          Yup.object().shape({
+            machine_type: Yup.number().required("Machine type is required"),
+            machine_quantity: Yup.number().required(
+              "Machine quantity is required"
+            ),
+          })
+        ),
+      })
+    ),
   });
 
-  
-
-  const { values, setValues, handleChange } = useForm(initialFValues);
-
-  const classes = style();  
+  const classes = style();
 
   const formik = useFormik({
     initialValues: initialFValues,
     validationSchema: validationSchema,
     onSubmit: (values, { setSubmitting, resetForm }) => {
-        setSubmitting(false);
-        addOrEdit(values, resetForm, setSubmitting);
+      setSubmitting(false);
+      addOrEdit(values, resetForm, setSubmitting);
     },
   });
 
-  useEffect(() => {
-    if (recordForEdit != null)
-      formik.setValues({
-        ...recordForEdit,
-      });
-  }, [recordForEdit]);
+  // useEffect(() => {
+  //   if (recordForEdit != null)
+  //     formik.setValues({
+  //       ...recordForEdit,
+  //     });
+  // }, [recordForEdit]);
 
   useEffect(() => {
-    async function getCategory() {
-      const response = await fetch("/api/machine/category/list/", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-      },
-    });
-      const body = await response.json();
-      setCategories(body);
-    }
-    getCategory();
-
-    async function getTypes() {
+    // type list
+    async function getTypeList() {
       const response = await fetch("/api/machine/type/list/", {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          "Content-buyer": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
       const body = await response.json();
-      setTypes(body);
+      setPlants(body);
     }
-    getTypes();
+
+    // name list
 
     async function getUnits() {
       const response = await fetch("/api/unit/name/list/", {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          "Content-buyer": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
       const body = await response.json();
-      setUnits(body);
+      setNameList(body);
     }
-    getUnits();
 
+    // production line list
+    async function getProductionLine() {
+      const response = await fetch("/api/production/line/list/", {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-buyer": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      const body = await response.json();
+      setProductionLine(body);
+    }
+    // planet List
+    async function getplant() {
+      const response = await fetch("/api/plant/list/", {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-buyer": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      const body = await response.json();
+      setPlants(body);
+    }
+    // buyer list
+    async function getbuyers() {
+      const response = await fetch("/api/buyer/list/", {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-buyer": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      const body = await response.json();
+      setbuyers(body);
+    }
+
+    getTypeList();
+    getUnits();
+    getProductionLine();
+    getplant();
+    getbuyers();
   }, []);
+
+  const addNewItem = (value) => {
+    const newSWMItem = {
+      line: 1,
+      start_date: new Date(),
+      end_date: new Date(),
+      swl: [
+        {
+          machine_type: 1,
+          machine_quantity: 1,
+        },
+      ],
+    };
+
+    // Update form values with the new SWM item
+    formik.setFieldValue("swm", [...formik.values.swm, newSWMItem]);
+  };
+
+  const handleRemoveMrc = (value) => {
+    // Create a new array without the item at the specified index
+    const updatedSWM = formik.values.swm.filter(
+      (_, idx) => idx !== value?.rowIndex
+    );
+
+    // Update form values with the updated SWM array
+    formik.setFieldValue("swm", updatedSWM);
+  };
+
+  const addNewSWL = (rowData, swlData, swlIndex) => {
+    const newSWLItem = {
+      id: formik.values.swm[rowData?.rowIndex].swl.length + 1, // Generate a new ID for the new SWL item
+      machine_type: 1,
+      machine_quantity: 1,
+    };
+
+    // Update form values with the new SWL item
+    formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, [
+      ...formik.values.swm[rowData?.rowIndex].swl,
+      newSWLItem,
+    ]);
+  };
+
+  const removeSwl = (rowData, swlData, swlIndex) => {
+    // Create a new array without the item at the specified index
+    const updatedSWL = formik.values.swm[rowData?.rowIndex].swl.filter(
+      (_, idx) => idx !== swlIndex
+    );
+
+    // Update form values with the updated SWL array
+    formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
+  };
+
+  const addSWMOnChange = (e, i, fieldName) => {
+    formik.setFieldValue(
+      `swm[${i}].${fieldName}`,
+      e?.value || e?.target?.value
+    );
+  };
+
+  const handleLineChange = (value, swmIndex) => {
+    // Update the form values with the new "line" for the specified "swm" item
+    formik.setFieldValue(`swm[${swmIndex}].line`, value);
+  };
+
+  const handleStartDateChange = (value, swmIndex) => {
+    // Update the form values with the new "start_date" for the specified "swm" item
+    formik.setFieldValue(`swm[${swmIndex}].start_date`, value);
+  };
+
+  const handleEndDateChange = (value, swmIndex) => {
+    // Update the form values with the new "start_date" for the specified "swm" item
+    formik.setFieldValue(`swm[${swmIndex}].end_date`, value);
+  };
+
+  const updateMachineQuantity = (swmIndex, swlIndex, newQuantity) => {
+    const updatedSWM = [...formik.values.swm];
+    const updatedSWL = [...updatedSWM[swmIndex].swl];
+    updatedSWL[swlIndex].machine_quantity = newQuantity;
+    updatedSWM[swmIndex].swl = updatedSWL;
+    formik.setFieldValue(`swm`, updatedSWM);
+  };
+
+  const updateMachineType = (swmIndex, swlIndex, newQuantity) => {
+    const updatedSWM = [...formik.values.swm];
+    const updatedSWL = [...updatedSWM[swmIndex].swl];
+    updatedSWL[swlIndex].machine_type = newQuantity;
+    updatedSWM[swmIndex].swl = updatedSWL;
+    formik.setFieldValue(`swm`, updatedSWM);
+  };
 
   const columns = [
     {
@@ -203,325 +313,424 @@ const MachineForm = (props) => {
       name: "line",
       label: "Line",
       options: {
-        filter: true,
-        sort: true,
+        filter: false,
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const swmIndex = tableMeta.rowIndex;
+          return (
+            <>
+              <Autocomplete
+                id={`swm[${swmIndex}].line`}
+                options={nameList}
+                getOptionLabel={(option) => option.name || ""}
+                getOptionSelected={(option, value) => option.id === value}
+                value={nameList.find((option) => option.id === value) || null}
+                onChange={(value, newValue) => {
+                  console.log("🚀 ~ MachineForm ~ value:", newValue);
+                  handleLineChange(newValue ? newValue.id : null, swmIndex);
+                }}
+                onBlur={formik.handleBlur}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Line"
+                    variant="outlined"
+                    error={
+                      formik.touched[`swm[${swmIndex}].line`] &&
+                      Boolean(formik.errors[`swm[${swmIndex}].line`])
+                    }
+                    helperText={
+                      formik.touched[`swm[${swmIndex}].line`] &&
+                      formik.errors[`swm[${swmIndex}].line`]
+                    }
+                  />
+                )}
+              />
+            </>
+          );
+        },
       },
     },
     {
       name: "start_date",
       label: "Start Date",
       options: {
-        filter: true,
-        sort: true,
+        filter: false,
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const swmIndex = tableMeta.rowIndex;
+          return (
+            <>
+              <Controls.DatePicker
+                // label="Start Date"
+                name={`swm[${swmIndex}].start_date`} // Update the name to access the correct "start_date"
+                value={value}
+                onChange={(value) => {
+                  handleStartDateChange(value, swmIndex); // Pass the value and the index of the "swm" item
+                }}
+                onBlur={formik.handleBlur}
+                autoFocus
+                fullWidth
+              />
+            </>
+          );
+        },
       },
     },
     {
       name: "end_date",
       label: "End Date",
       options: {
-        filter: true,
-        sort: true,
+        filter: false,
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const swmIndex = tableMeta.rowIndex;
+          return (
+            <>
+              <Controls.DatePicker
+                // label="End Date"
+                name={`swm[${swmIndex}].end_date`} // Update the name to access the correct "start_date"
+                value={value}
+                onChange={(value) => {
+                  handleEndDateChange(value, swmIndex); // Pass the value and the index of the "swm" item
+                }}
+                onBlur={formik.handleBlur}
+                autoFocus={value}
+                fullWidth
+              />
+            </>
+          );
+        },
+      },
+    },
+    {
+      name: "swl",
+      label: "SWL Data",
+      options: {
+        filter: false,
+        customBodyRender: (value, tableMeta, updateValue) => {
+          return (
+            <>
+              {value?.map((swlItem, swlIndex) => {
+                const isLastItem = swlIndex === value.length - 1;
+                return (
+                  <div key={swlIndex}>
+                    {/* Check if "swl" and its elements exist before accessing them */}
+                    {swlItem && (
+                      <>
+                        <Grid container spacing={3}>
+                          <Grid item xs={12} md={4}>
+                            <Autocomplete
+                              id={`swl[${swlIndex}].machine_type`}
+                              options={nameList}
+                              getOptionLabel={(option) => option.name || ""}
+                              getOptionSelected={(option, value) =>
+                                option.id === value
+                              }
+                              value={
+                                nameList.find(
+                                  (option) => option.id === swlItem.machine_type
+                                ) || null
+                              }
+                              onChange={(event, newValue) => {
+                                updateMachineType(
+                                  tableMeta?.rowIndex,
+                                  swlIndex,
+                                  newValue ? newValue.id : null
+                                );
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="Machine Type"
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <Controls.Input
+                              label="Machine Quantity"
+                              name={`swl[${swlIndex}].machine_quantity`}
+                              value={swlItem?.machine_quantity || ""}
+                              onChange={(e) => {
+                                updateMachineQuantity(
+                                  tableMeta?.rowIndex,
+                                  swlIndex,
+                                  Number(e.target.value)
+                                );
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <div>
+                              {isLastItem && (
+                                <IconButton
+                                  color="primary"
+                                  onClick={() =>
+                                    addNewSWL(tableMeta, swlItem, swlIndex)
+                                  }
+                                >
+                                  <AddIcon fontSize="medium" />
+                                </IconButton>
+                              )}
+
+                              <IconButton
+                                color="primary"
+                                onClick={() =>
+                                  removeSwl(tableMeta, swlItem, swlIndex)
+                                }
+                                disabled={swlIndex === 0 && value?.length === 1}
+                              >
+                                <RemoveIcon fontSize="medium" />
+                              </IconButton>
+                            </div>
+                          </Grid>
+                        </Grid>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          );
+        },
+      },
+    },
+    {
+      name: "Actions",
+      options: {
+        filter: false,
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const isLastRow = tableMeta.rowIndex === formik.values.swm.length - 1;
+          return (
+            <div style={{ display: "flex" }}>
+              {isLastRow && (
+                <IconButton
+                  color="primary"
+                  onClick={() => addNewItem(tableMeta)}
+                >
+                  <AddIcon fontSize="medium" />
+                </IconButton>
+              )}
+              <IconButton
+                color="primary"
+                onClick={() => handleRemoveMrc(tableMeta)}
+                disabled={
+                  tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
+                }
+              >
+                <RemoveIcon fontSize="medium" />
+              </IconButton>
+            </div>
+          );
+        },
       },
     },
   ];
 
   const options = {
+    textLabels: {
+      body: {
+        noMatch: false ? (
+          <CustomCircularProgress
+            size={70}
+            thickness={5}
+            color="secondary"
+            message="Data is loading. Please do not close the tab..."
+          />
+        ) : (
+          "Sorry, there is no matching data to display"
+        ),
+      },
+    },
+    filterType: "select",
     selectableRows: "multiple",
     responsive: "standard",
-  }
-
-  console.log("TEST: ",columns,formik.values.swm,options)
+    selectableRows: "multiple",
+    rowsPerPage: [20],
+    rowsPerPageOptions: [20, 50, 100, 200],
+    print: false,
+    download: false,
+  };
 
   return (
     <Form onSubmit={formik.handleSubmit}>
-      <Grid container alignItems="flex-start" spacing={1}>
-      <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Model No"
-            name="model_no"
-            value={formik.values.model_no}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.model_no && Boolean(formik.errors.model_no)}
-            helperText={formik.touched.model_no && formik.errors.model_no}
-            fullWidth
-          />
+      <React.Fragment>
+        <Grid container alignItems="flex-start" spacing={1}>
+          <MuiThemeProvider theme={getMuiTheme()}>
+            <Box>
+              <BreadCrumb routeSegments={[{ name: "MRCs Table" }]} />
+
+              <Grid container alignItems="flex-start" spacing={1}>
+                <Grid item md={3} sm={4} xs={6}>
+                  <Controls.Input
+                    label="Style"
+                    name="style"
+                    value={formik.values.style}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.style && Boolean(formik.errors.style)}
+                    helperText={formik.touched.style && formik.errors.style}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item md={3} sm={4} xs={6}>
+                  <Autocomplete
+                    id="unit_name"
+                    options={nameList}
+                    hide="true"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Unit name"
+                        variant="outlined"
+                        error={
+                          formik.touched.unit_name &&
+                          Boolean(formik.errors.unit_name)
+                        }
+                        helperText={
+                          formik.touched.unit_name && formik.errors.unit_name
+                        }
+                      />
+                    )}
+                    getOptionLabel={(option) => option.name || ""}
+                    getOptionSelected={(option, value) =>
+                      option.id === value.id
+                    }
+                    value={
+                      nameList.find(
+                        (unit) => unit.id === formik.values.unit_name
+                      ) ||
+                      formik.values.unit_name ||
+                      null
+                    }
+                    onChange={(_event, unit_name) => {
+                      formik.setFieldValue(
+                        "plant_name",
+                        unit_name ? unit_name.id : null
+                      );
+                    }}
+                    onBlur={formik.handleBlur}
+                    // multiple='true'
+                  />
+                </Grid>
+                <Grid item md={3} sm={4} xs={6}>
+                  <Autocomplete
+                    id="plant_name"
+                    options={plants}
+                    hide="true"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Plant"
+                        variant="outlined"
+                        error={
+                          formik.touched.plant_name &&
+                          Boolean(formik.errors.plant_name)
+                        }
+                        helperText={
+                          formik.touched.plant_name && formik.errors.plant_name
+                        }
+                      />
+                    )}
+                    getOptionLabel={(option) => option.name || ""}
+                    getOptionSelected={(option, value) =>
+                      option.id === value.id
+                    }
+                    value={
+                      nameList.find(
+                        (line) => line.id === formik.values.plant_name
+                      ) ||
+                      formik.values.plant_name ||
+                      null
+                    }
+                    onChange={(_event, plant) => {
+                      formik.setFieldValue(
+                        "plant_name",
+                        plant ? plant.id : null
+                      );
+                    }}
+                    onBlur={formik.handleBlur}
+                    // multiple='true'
+                  />
+                </Grid>
+                <Grid item md={3} sm={4} xs={6}>
+                  <Autocomplete
+                    id="buyer_name"
+                    options={plants}
+                    hide="true"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Buyer Name"
+                        variant="outlined"
+                        error={
+                          formik.touched.buyer_name &&
+                          Boolean(formik.errors.buyer_name)
+                        }
+                        helperText={
+                          formik.touched.buyer_name && formik.errors.buyer_name
+                        }
+                      />
+                    )}
+                    getOptionLabel={(option) => option.name || ""}
+                    getOptionSelected={(option, value) =>
+                      option.id === value.id
+                    }
+                    value={
+                      nameList.find(
+                        (line) => line.id === formik.values.buyer_name
+                      ) ||
+                      formik.values.buyer_name ||
+                      null
+                    }
+                    onChange={(_event, plant) => {
+                      formik.setFieldValue(
+                        "buyer_name",
+                        plant ? plant.id : null
+                      );
+                    }}
+                    onBlur={formik.handleBlur}
+                    // multiple='true'
+                  />
+                </Grid>
+
+                <Grid md={12} sm={4} xs={6} item style={{ marginTop: 10 }}>
+                  {/* Table */}
+                  <MUIDataTable
+                    title={"MRC List"}
+                    data={formik.values.swm}
+                    columns={columns}
+                    options={options}
+                    className={classes.pageContent}
+                  />
+                  <TableCell className={classes.MuiTableCell} />
+                </Grid>
+
+                <Grid md={12} sm={4} xs={6} item style={{ marginTop: 10 }}>
+                  <div className={classes.wrapper}>
+                    <Controls.Button
+                      buyer="submit"
+                      disabled={formik.isSubmitting}
+                      type="submit"
+                      text="Submit"
+                    />
+                    {formik.isSubmitting && (
+                      <CircularProgress
+                        size={24}
+                        className={classes.buttonProgress}
+                      />
+                    )}
+                    <Controls.Button
+                      text="Reset"
+                      color="default"
+                      onClick={formik.resetForm}
+                    />
+                  </div>
+                </Grid>
+              </Grid>
+            </Box>
+          </MuiThemeProvider>
         </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Select
-            label="Unit"
-            name="parent_unit"
-            value={formik.values.parent_unit}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            options={units}
-            error={formik.touched.parent_unit && Boolean(formik.errors.parent_unit)}
-            helperText={formik.touched.parent_unit && formik.errors.parent_unit}
-          />
-        </Grid>
-        {/* <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Unique Name"
-            name="name"
-            value={generateUniqueName()}
-            onChange={formik.handleChange}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-          />
-        </Grid> */}
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Select
-            label="Category"
-            name="category"
-            value={formik.values.category}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            options={categories}
-            error={formik.touched.category && Boolean(formik.errors.category)}
-            helperText={formik.touched.category && formik.errors.category}
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Select
-            label="Type"
-            name="type"
-            value={formik.values.type}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            options={types}
-            error={formik.touched.type && Boolean(formik.errors.type)}
-            helperText={formik.touched.type && formik.errors.type}
-          />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.Input
-            label="Brand"
-            name="brand"
-            value={formik.values.brand}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.brand && Boolean(formik.errors.brand)}
-            helperText={formik.touched.brand && formik.errors.brand}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.Input
-            label="Supplier"
-            name="supplier"
-            value={formik.values.supplier}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.supplier && Boolean(formik.errors.supplier)}
-            helperText={formik.touched.supplier && formik.errors.supplier}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.Input
-            label="Acquisition Value"
-            name="acquisition_value"
-            value={formik.values.acquisition_value}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            type='number'
-            error={formik.touched.acquisition_value && Boolean(formik.errors.acquisition_value)}
-            helperText={formik.touched.acquisition_value && formik.errors.acquisition_value}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.DatePicker
-              label="Acquisition Date"
-              name="acquisition_date"
-              value={formik.values.acquisition_date}
-              onChange={value => {
-                formik.setFieldValue("acquisition_date", value)
-              }}
-              onBlur={formik.handleBlur}
-              fullWidth
-            />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.DatePicker
-              label="Warranty Start"
-              name="warranty_start"
-              value={formik.values.warranty_start}
-              onChange={value => {
-                formik.setFieldValue("warranty_start", value)
-              }}
-              onBlur={formik.handleBlur}
-              fullWidth
-            />
-        </Grid>
-        <Grid item md={4} sm={4} xs={6}>
-          <Controls.DatePicker
-              label="Warranty End"
-              name="warranty_end"
-              value={formik.values.warranty_end}
-              onChange={value => {
-                formik.setFieldValue("warranty_end", value)
-              }}
-              onBlur={formik.handleBlur}
-              fullWidth
-            />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Warranty Details"
-            name="warranty_details"
-            value={formik.values.warranty_details}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.warranty_details && Boolean(formik.errors.warranty_details)}
-            helperText={formik.touched.warranty_details && formik.errors.warranty_details}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Factory Serial No"
-            name="factory_serial_no"
-            value={formik.values.factory_serial_no}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.factory_serial_no && Boolean(formik.errors.factory_serial_no)}
-            helperText={formik.touched.factory_serial_no && formik.errors.factory_serial_no}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Manufacture Serial No"
-            name="manufacture_serial_no"
-            value={formik.values.manufacture_serial_no}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.manufacture_serial_no && Boolean(formik.errors.manufacture_serial_no)}
-            helperText={formik.touched.manufacture_serial_no && formik.errors.manufacture_serial_no}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Location"
-            name="location"
-            value={formik.values.location}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.location && Boolean(formik.errors.location)}
-            helperText={formik.touched.location && formik.errors.location}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Air Consumption"
-            name="air_consumption"
-            value={formik.values.air_consumption}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.air_consumption && Boolean(formik.errors.air_consumption)}
-            helperText={formik.touched.air_consumption && formik.errors.air_consumption}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Steam Consumption"
-            name="steam_consumption"
-            value={formik.values.steam_consumption}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.steam_consumption && Boolean(formik.errors.steam_consumption)}
-            helperText={formik.touched.steam_consumption && formik.errors.steam_consumption}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.Input
-            label="Watt Consumption"
-            name="watt_consumption"
-            value={formik.values.watt_consumption}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.watt_consumption && Boolean(formik.errors.watt_consumption)}
-            helperText={formik.touched.watt_consumption && formik.errors.watt_consumption}
-            fullWidth
-          />
-        </Grid>
-        <Grid item md={3} sm={4} xs={6}>
-          <Controls.DatePicker
-              label="Start Date"
-              name="start_date"
-              value={formik.values.start_date}
-              onChange={value => {
-                formik.setFieldValue("start_date", value)
-              }}
-              onBlur={formik.handleBlur}
-              fullWidth
-            />
-        </Grid>
-        <Grid item md={6} sm={6} xs={12}>
-          <Controls.Input
-            label="Description"
-            name="description"
-            value={formik.values.description}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={
-              formik.touched.description &&
-              Boolean(formik.errors.description)
-            }
-            helperText={
-              formik.touched.description && formik.errors.description
-            }
-            fullWidth
-            multiline
-            minRows={2}
-          />
-        </Grid>
-        <Grid item md={6} sm={6} xs={12}>
-          <Controls.Input
-            label="Remark"
-            name="remark"
-            value={formik.values.remark}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.remark && Boolean(formik.errors.remark)}
-            helperText={formik.touched.remark && formik.errors.remark}
-            fullWidth
-            multiline
-            minRows={2}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <TableForm 
-            tableColumns={columns}
-            // data={formik.values.swm}
-            options={options}
-          />
-        </Grid>
-        <Grid item style={{ marginTop: 10 }}>
-          <div className={classes.wrapper}>
-            <Controls.Button
-              type="submit"
-              disabled={formik.isSubmitting}
-              text="Submit"
-            />
-            {formik.isSubmitting && (
-              <CircularProgress size={24} className={classes.buttonProgress} />
-            )}
-            <Controls.Button
-              text="Reset"
-              color="default"
-              onClick={formik.resetForm}
-            />
-          </div>
-        </Grid>
-      </Grid>
+      </React.Fragment>
     </Form>
   );
 };
