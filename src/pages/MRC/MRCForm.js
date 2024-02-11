@@ -681,12 +681,12 @@ const MRCForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      plants.find((line) => line.id === formik.values.buyer) ||
+                      buyers.find((buyer) => buyer.id === formik.values.buyer) ||
                       formik.values.buyer ||
                       null
                     }
-                    onChange={(_event, plant) => {
-                      formik.setFieldValue("buyer", plant ? plant.id : null);
+                    onChange={(_event, buyer) => {
+                      formik.setFieldValue("buyer", buyer ? buyer.id : null);
                     }}
                     onBlur={formik.handleBlur}
                     // multiple='true'
