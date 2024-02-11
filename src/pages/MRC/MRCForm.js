@@ -430,7 +430,15 @@ const MRCForm = (props) => {
                     {/* Check if "swl" and its elements exist before accessing them */}
                     {swlItem && (
                       <>
-                        <Grid container spacing={3} sx={{ m: 2 }}>
+                        <Grid
+                          container
+                          spacing={3}
+                          sx={{ m: 2 }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
                           <Grid item xs={12} md={4}>
                             <Autocomplete
                               id={`swl[${swlIndex}].machine_type`}
@@ -476,7 +484,12 @@ const MRCForm = (props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={4}>
-                            <div style={{display:"flex", gap:"10px"}}>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                              }}
+                            >
                               {isLastItem && (
                                 <IconButton
                                   color="primary"
@@ -484,12 +497,12 @@ const MRCForm = (props) => {
                                     addNewSWL(tableMeta, swlItem, swlIndex)
                                   }
                                   style={{
-                                    backgroundColor: "#50d07d",
+                                    backgroundColor: "#019301",
                                     color: "white",
                                   }}
                                   size="small"
                                 >
-                                  <AddIcon  />
+                                  <AddIcon />
                                 </IconButton>
                               )}
 
@@ -499,13 +512,17 @@ const MRCForm = (props) => {
                                   removeSwl(tableMeta, swlItem, swlIndex)
                                 }
                                 style={{
-                                  backgroundColor: `${swlIndex === 0 && value?.length === 1 ? "#ff000052" : "#e10707"}`,
+                                  backgroundColor: `${
+                                    swlIndex === 0 && value?.length === 1
+                                      ? "#ff000052"
+                                      : "#e10707"
+                                  }`,
                                   color: "white",
                                 }}
                                 disabled={swlIndex === 0 && value?.length === 1}
                                 size="small"
                               >
-                                <RemoveIcon  />
+                                <RemoveIcon />
                               </IconButton>
                             </div>
                           </Grid>
@@ -531,7 +548,7 @@ const MRCForm = (props) => {
               {isLastRow && (
                 <IconButton
                   onClick={() => addNewItem(tableMeta)}
-                  style={{ backgroundColor: "#50d07d", color: "white" }}
+                  style={{ backgroundColor: "#019301", color: "white" }}
                   size="small"
                 >
                   <AddIcon />
@@ -540,7 +557,14 @@ const MRCForm = (props) => {
               <IconButton
                 color="primary"
                 onClick={() => handleRemoveMrc(tableMeta)}
-                style={{ backgroundColor: `${tableMeta?.rowIndex === 0 && formik.values.swm.length === 1 ? "#ff000052" : "#e10707"}`, color: "white" }}
+                style={{
+                  backgroundColor: `${
+                    tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
+                      ? "#ff000052"
+                      : "#e10707"
+                  }`,
+                  color: "white",
+                }}
                 size="small"
                 disabled={
                   tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
