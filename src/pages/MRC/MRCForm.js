@@ -15,7 +15,7 @@ import { Form } from "../../components/Form/useForm";
 import { useFormik } from "formik";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AddIcon from "@material-ui/icons/Add";
-import RemoveIcon from "@material-ui/icons/Remove"
+import RemoveIcon from "@material-ui/icons/Remove";
 import { makeStyles } from "@material-ui/core/styles";
 import MUIDataTable from "mui-datatables";
 import { CustomCircularProgress } from "../../components/Progress/CustomCircularProgress";
@@ -61,7 +61,7 @@ const style = makeStyles({
 
 const MRCForm = (props) => {
   const { addOrEdit, recordForEdit } = props;
-  
+
   const getMuiTheme = () =>
     createMuiTheme({
       overrides: {
@@ -80,6 +80,17 @@ const MRCForm = (props) => {
         MuiTableCell: {
           root: {
             padding: "2px",
+            "&:last-child": {
+              border: 0,
+            },
+          },
+        },
+        MuiTableRow: {
+          root: {
+            "&:nth-child(even)": {
+              backgroundColor: "#89898921",
+              color: "#fff",
+            },
           },
         },
       },
@@ -131,12 +142,12 @@ const MRCForm = (props) => {
     },
   });
 
-  // useEffect(() => {
-  //   if (recordForEdit != null)
-  //     formik.setValues({
-  //       ...recordForEdit,
-  //     });
-  // }, [recordForEdit]);
+  useEffect(() => {
+    if (recordForEdit != null)
+      formik.setValues({
+        ...recordForEdit,
+      });
+  }, [recordForEdit]);
 
   useEffect(() => {
     // type list
@@ -323,9 +334,10 @@ const MRCForm = (props) => {
                 options={productionLine}
                 getOptionLabel={(option) => option.name || ""}
                 getOptionSelected={(option, value) => option.id === value}
-                value={productionLine.find((option) => option.id === value) || null}
+                value={
+                  productionLine.find((option) => option.id === value) || null
+                }
                 onChange={(value, newValue) => {
-                  console.log("🚀 ~ MachineForm ~ value:", newValue);
                   handleLineChange(newValue ? newValue.id : null, swmIndex);
                 }}
                 onBlur={formik.handleBlur}
@@ -342,6 +354,7 @@ const MRCForm = (props) => {
                       formik.touched[`swm[${swmIndex}].line`] &&
                       formik.errors[`swm[${swmIndex}].line`]
                     }
+                    style={{ width: "250px" }}
                   />
                 )}
               />
@@ -424,8 +437,9 @@ const MRCForm = (props) => {
                           spacing={3}
                           style={{
                             backgroundColor: `${isOddIndex ? "#89898921" : ""}`,
-                            borderRadius: `${isOddIndex ? "5px" : ""}`
+                            borderRadius: `${isOddIndex ? "5px" : ""}`,
                           }}
+                          sx={{m:2}}
                         >
                           <Grid item xs={12} md={4}>
                             <Autocomplete
@@ -449,6 +463,7 @@ const MRCForm = (props) => {
                               }}
                               renderInput={(params) => (
                                 <TextField
+                                  style={{ width: "250px" }}
                                   {...params}
                                   label="Machine Type"
                                   variant="outlined"
@@ -591,12 +606,9 @@ const MRCForm = (props) => {
                         label="Unit name"
                         variant="outlined"
                         error={
-                          formik.touched.unit &&
-                          Boolean(formik.errors.unit)
+                          formik.touched.unit && Boolean(formik.errors.unit)
                         }
-                        helperText={
-                          formik.touched.unit && formik.errors.unit
-                        }
+                        helperText={formik.touched.unit && formik.errors.unit}
                       />
                     )}
                     getOptionLabel={(option) => option.name || ""}
@@ -604,17 +616,12 @@ const MRCForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      units.find(
-                        (unit) => unit.id === formik.values.unit
-                      ) ||
+                      units.find((unit) => unit.id === formik.values.unit) ||
                       formik.values.unit ||
                       null
                     }
                     onChange={(_event, unit) => {
-                      formik.setFieldValue(
-                        "unit",
-                        unit ? unit.id : null
-                      );
+                      formik.setFieldValue("unit", unit ? unit.id : null);
                     }}
                     onBlur={formik.handleBlur}
                     // multiple='true'
@@ -631,12 +638,9 @@ const MRCForm = (props) => {
                         label="Plant"
                         variant="outlined"
                         error={
-                          formik.touched.plant &&
-                          Boolean(formik.errors.plant)
+                          formik.touched.plant && Boolean(formik.errors.plant)
                         }
-                        helperText={
-                          formik.touched.plant && formik.errors.plant
-                        }
+                        helperText={formik.touched.plant && formik.errors.plant}
                       />
                     )}
                     getOptionLabel={(option) => option.name || ""}
@@ -644,18 +648,13 @@ const MRCForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      plants.find(
-                        (line) => line.id === formik.values.plant
-                      ) ||
+                      plants.find((line) => line.id === formik.values.plant) ||
                       formik.values.plant ||
                       null
                     }
                     onChange={(_event, plant) => {
                       console.log("🚀 ~ MachineForm ~ plant:", plant);
-                      formik.setFieldValue(
-                        "plant",
-                        plant ? plant.id : null
-                      );
+                      formik.setFieldValue("plant", plant ? plant.id : null);
                     }}
                     onBlur={formik.handleBlur}
                     // multiple='true'
@@ -672,12 +671,9 @@ const MRCForm = (props) => {
                         label="Buyer Name"
                         variant="outlined"
                         error={
-                          formik.touched.buyer &&
-                          Boolean(formik.errors.buyer)
+                          formik.touched.buyer && Boolean(formik.errors.buyer)
                         }
-                        helperText={
-                          formik.touched.buyer && formik.errors.buyer
-                        }
+                        helperText={formik.touched.buyer && formik.errors.buyer}
                       />
                     )}
                     getOptionLabel={(option) => option.name || ""}
@@ -685,17 +681,12 @@ const MRCForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      plants.find(
-                        (line) => line.id === formik.values.buyer
-                      ) ||
+                      plants.find((line) => line.id === formik.values.buyer) ||
                       formik.values.buyer ||
                       null
                     }
                     onChange={(_event, plant) => {
-                      formik.setFieldValue(
-                        "buyer",
-                        plant ? plant.id : null
-                      );
+                      formik.setFieldValue("buyer", plant ? plant.id : null);
                     }}
                     onBlur={formik.handleBlur}
                     // multiple='true'

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import clsx from 'clsx';
+import clsx from "clsx";
 import BreadCrumb from "../../components/BreadCrumb/BreadCrumb";
 import { Search } from "@material-ui/icons";
 import AddIcon from "@material-ui/icons/Add";
-import UploadIcon from '@material-ui/icons/CloudUpload';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import UploadIcon from "@material-ui/icons/CloudUpload";
+import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 import MUIDataTable from "mui-datatables";
 import EditIcon from "@material-ui/icons/Edit";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
-import CropFreeIcon from '@material-ui/icons/CropFree';
+import CropFreeIcon from "@material-ui/icons/CropFree";
 import CloseIcon from "@material-ui/icons/Close";
 import Paper from "@material-ui/core/Paper";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import IconButton from "@material-ui/core/IconButton";
-import { Box } from '@material-ui/core';
+import { Box } from "@material-ui/core";
 import { CustomCircularProgress } from "../../components/Progress/CustomCircularProgress";
 import {
   useMachineState,
@@ -32,12 +32,8 @@ import Notification from "../../components/SnackBar/Notification";
 import BarcodeScanner from "../../components/Barcode/BarcodeScanner";
 import MRCForm from "./MRCForm";
 
-import {
-  makeStyles,
-  TableCell,
-  Tooltip
-} from "@material-ui/core";
-import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
+import { makeStyles, TableCell, Tooltip } from "@material-ui/core";
+import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
   pageContent: {
@@ -53,44 +49,44 @@ const useStyles = makeStyles((theme) => ({
   },
   iconButtonColor: {
     color: "#fff",
-    '&:hover': {
-      color: "#0000ff"
-  }
-  }
+    "&:hover": {
+      color: "#0000ff",
+    },
+  },
 }));
-
 
 function MRC() {
   const classes = useStyles();
-  const getMuiTheme = () => createMuiTheme({
-    overrides: {
-      MUIDataTableToolbar: {
-        root: {
-          backgroundColor: "#50d07d",
-          color: "#fff"
+  const getMuiTheme = () =>
+    createMuiTheme({
+      overrides: {
+        MUIDataTableToolbar: {
+          root: {
+            backgroundColor: "#50d07d",
+            color: "#fff",
+          },
+          icon: {
+            color: "#fff",
+            "&:hover": {
+              color: "#0000ff",
+            },
+          },
         },
-        icon: {
-          color: "#fff",
-          '&:hover': {
-               color: "#0000ff"
-           }
-       },
-      },
-      MuiTableCell: {
-        root: {
-            padding: '2px',
+        MuiTableCell: {
+          root: {
+            padding: "2px",
+          },
         },
       },
-    },
 
-    typography: {
-      "fontFamily": `"Roboto", "Helvetica", "Arial", sans-serif`,
-      "fontSize": 14,
-      "fontWeightLight": 300,
-      "fontWeightRegular": 400,
-      "fontWeightMedium": 500
-     }
-  })
+      typography: {
+        fontFamily: `"Roboto", "Helvetica", "Arial", sans-serif`,
+        fontSize: 14,
+        fontWeightLight: 300,
+        fontWeightRegular: 400,
+        fontWeightMedium: 500,
+      },
+    });
   const [isLoading, setIsLoading] = useState(false);
   const [recordForEdit, setRecordForEdit] = useState(null);
   const [searchValue, setSearchValue] = useState(null);
@@ -108,8 +104,8 @@ function MRC() {
   const [MachineList, setMachineList] = useState([]);
   const [fiber, setFiber] = useState([]);
 
-  const user_type = localStorage.getItem("user_type")
-  const unit = localStorage.getItem("unit")
+  const user_type = localStorage.getItem("user_type");
+  const unit = localStorage.getItem("unit");
 
   const [notify, setNotify] = useState({
     isOpen: false,
@@ -137,9 +133,9 @@ function MRC() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
     },
-  }
+  };
 
   async function fetchMachines() {
     setIsLoading(true);
@@ -176,7 +172,7 @@ function MRC() {
   }
 
   const postStyleWiseMachine = async (values, setSubmitting) => {
-    console.log("create: ", values)
+    console.log("create: ", values);
     try {
       await axios
         .post("/api/style-wise-machines-create/", values, AxiosHeader)
@@ -191,10 +187,13 @@ function MRC() {
   };
 
   const updateStyleWiseMachine = async (values, setSubmitting) => {
-
     try {
       await axios
-        .put(`/api/style-wise-machines/update/${values.id}/`, values, AxiosHeader)
+        .put(
+          `/api/style-wise-machines/update/${values.id}/`,
+          values,
+          AxiosHeader
+        )
         .then((resp) => {
           setFabricRecord(resp.data);
           // alert(JSON.stringify(values, null, 2));
@@ -211,9 +210,8 @@ function MRC() {
     fetchMachines();
   }, [fabricRecord, searchOpen]);
 
-
   const openInPopup = (item) => {
-    fetchStyleWiseMachineDetail(item.id)
+    fetchStyleWiseMachineDetail(item.id);
     // setRecordForEdit(item);
     setOpenPopup(true);
   };
@@ -274,10 +272,18 @@ function MRC() {
               <IconButton
                 color="primary"
                 onClick={() => {
-                  if ((item.parent_unit_name === unit && user_type === 'Maintenance Head') || (item.parent_unit_name === unit && user_type === 'Maintenance Coordinate') || (item.parent_unit_name === unit && user_type === 'IE Head') || user_type === 'Admin'){
+                  if (
+                    (item.parent_unit_name === unit &&
+                      user_type === "Maintenance Head") ||
+                    (item.parent_unit_name === unit &&
+                      user_type === "Maintenance Coordinate") ||
+                    (item.parent_unit_name === unit &&
+                      user_type === "IE Head") ||
+                    user_type === "Admin"
+                  ) {
                     openInPopup(item);
-                  }else{
-                    alert("You have no update permission")
+                  } else {
+                    alert("You have no update permission");
                   }
                   // openInPopup(item);
                 }}
@@ -301,9 +307,8 @@ function MRC() {
     },
   ];
 
-
   const addOrEdit = (style, resetForm, setSubmitting) => {
-    console.log("data: ", style)
+    console.log("data: ", style);
     if (style.id == 0) postStyleWiseMachine(style, setSubmitting);
     else updateStyleWiseMachine(style, setSubmitting);
     resetForm();
@@ -319,9 +324,17 @@ function MRC() {
   const options = {
     textLabels: {
       body: {
-        noMatch: isLoading ?
-                    <CustomCircularProgress size={70} thickness={5} color="secondary" message="Data is loading. Please do not close the tab..." /> : 'Sorry, there is no matching data to display',
-      }
+        noMatch: isLoading ? (
+          <CustomCircularProgress
+            size={70}
+            thickness={5}
+            color="secondary"
+            message="Data is loading. Please do not close the tab..."
+          />
+        ) : (
+          "Sorry, there is no matching data to display"
+        ),
+      },
     },
     filterType: "select",
     selectableRows: false,
@@ -331,16 +344,17 @@ function MRC() {
     customToolbar: () => {
       return (
         <>
-        <Tooltip title={"Add New"}>
-          <IconButton className={classes.iconButtonColor}
-            onClick={() => {
-              setOpenPopup(true);
-              setRecordForEdit(null);
-            }}
-          >
-            <AddIcon />
-          </IconButton>
-        </Tooltip>
+          <Tooltip title={"Add New"}>
+            <IconButton
+              className={classes.iconButtonColor}
+              onClick={() => {
+                setOpenPopup(true);
+                setRecordForEdit(null);
+              }}
+            >
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
         </>
       );
     },
@@ -350,42 +364,35 @@ function MRC() {
     searchOpen: searchOpen,
   };
 
-
-
   return (
     <React.Fragment>
       <Box position="relative">
         <MuiThemeProvider theme={getMuiTheme()}>
           <div>
             <BreadCrumb routeSegments={[{ name: "MRCs" }]} />
-            {
-              isLoading ? 
-
+            {isLoading ? (
               <MUIDataTable
                 title={"MRC List"}
                 columns={columns}
                 options={options}
-                className = {classes.pageContent}
-              /> :
-
+                className={classes.pageContent}
+              />
+            ) : (
               <MUIDataTable
                 title={"MRC List"}
                 data={MachineList}
                 columns={columns}
                 options={options}
-                className = {classes.pageContent}
+                className={classes.pageContent}
               />
-            }
-            <TableCell
-              className= {classes.MuiTableCell}
-            />
+            )}
+            <TableCell className={classes.MuiTableCell} />
             <Popup
               title="MRC Form"
               openPopup={openPopup}
               setOpenPopup={setOpenPopup}
-              
             >
-              <MRCForm recordForEdit={recordForEdit} addOrEdit={addOrEdit}/>
+              <MRCForm recordForEdit={recordForEdit} addOrEdit={addOrEdit} />
             </Popup>
             <Notification notify={notify} setNotify={setNotify} />
           </div>
