@@ -187,10 +187,11 @@ function MRC() {
   };
 
   const updateStyleWiseMachine = async (values, setSubmitting) => {
+    console.log("Updated data: ", values)
     try {
       await axios
         .put(
-          `/api/style-wise-machines/update/${values.id}/`,
+          `/api/style-wise-machines-update/${values.id}/`,
           values,
           AxiosHeader
         )
