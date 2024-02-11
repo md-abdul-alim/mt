@@ -389,6 +389,7 @@ function MRC() {
             <TableCell className={classes.MuiTableCell} />
             <Popup
               title="MRC Form"
+              width="xl"
               openPopup={openPopup}
               setOpenPopup={setOpenPopup}
             >
