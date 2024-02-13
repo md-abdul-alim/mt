@@ -3,6 +3,7 @@ import clsx from "clsx";
 import BreadCrumb from "../../components/BreadCrumb/BreadCrumb";
 import { Search } from "@material-ui/icons";
 import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
 import UploadIcon from "@material-ui/icons/CloudUpload";
 import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
 import MUIDataTable from "mui-datatables";
@@ -121,14 +122,6 @@ function MRC() {
   const dispatch = useMachineDispatch();
   const { fabricList, loading, errorMessage } = useMachineState(); //read the values of loading and errorMessage from context
 
-  const fetchMachineList = async () => {
-    try {
-      await MachineList(dispatch);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const AxiosHeader = {
     headers: {
       "Access-Control-Allow-Origin": "*",
@@ -137,7 +130,7 @@ function MRC() {
     },
   };
 
-  async function fetchMachines() {
+  async function fetchStyleWiseMachines() {
     setIsLoading(true);
     try {
       await axios
@@ -205,10 +198,25 @@ function MRC() {
     }
   };
 
+  const deleteStyleWiseMachine = async (values) => {
+    try {
+      await axios
+        .delete(
+          `/api/style-wise-machines-delete/${values.id}/`,
+          values,
+          AxiosHeader
+        )
+        .then((resp) => {
+          fetchStyleWiseMachines();
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // Similar to componentDidMount and componentDidUpdate:
   useEffect(() => {
-    fetchMachineList();
-    fetchMachines();
+    fetchStyleWiseMachines();
   }, [fabricRecord, searchOpen]);
 
   const openInPopup = (item) => {
@@ -273,15 +281,7 @@ function MRC() {
               <IconButton
                 color="primary"
                 onClick={() => {
-                  if (
-                    (item.parent_unit_name === unit &&
-                      user_type === "Maintenance Head") ||
-                    (item.parent_unit_name === unit &&
-                      user_type === "Maintenance Coordinate") ||
-                    (item.parent_unit_name === unit &&
-                      user_type === "IE Head") ||
-                    user_type === "Admin"
-                  ) {
+                  if (user_type === "Admin") {
                     openInPopup(item);
                   } else {
                     alert("You have no update permission");
@@ -290,6 +290,17 @@ function MRC() {
                 }}
               >
                 <EditIcon fontSize="medium" />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  if (user_type === "Admin") {
+                    deleteStyleWiseMachine(item);
+                  } else {
+                    alert("You have no delete permission");
+                  }
+                }}
+              >
+                <DeleteIcon color="error" fontSize="medium" />
               </IconButton>
               <Link
                 to={{
@@ -394,7 +405,7 @@ function MRC() {
               openPopup={openPopup}
               setOpenPopup={setOpenPopup}
             >
-              <MRCForm recordForEdit={recordForEdit} addOrEdit={addOrEdit} />
+              <MRCForm recordForEdit={recordForEdit} addOrEdit={addOrEdit} AxiosHeader={AxiosHeader}/>
             </Popup>
             <Notification notify={notify} setNotify={setNotify} />
           </div>
