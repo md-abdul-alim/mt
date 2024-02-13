@@ -20,6 +20,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import MUIDataTable from "mui-datatables";
 import { CustomCircularProgress } from "../../components/Progress/CustomCircularProgress";
 import Controls from "../../components/Controls/Controls";
+import axios from "axios";
 import { Autocomplete } from "@material-ui/lab";
 
 const initialFValues = {
@@ -59,7 +60,7 @@ const style = makeStyles({
 });
 
 const MRCForm = (props) => {
-  const { addOrEdit, recordForEdit } = props;
+  const { addOrEdit, recordForEdit, AxiosHeader } = props;
 
   const getMuiTheme = () =>
     createMuiTheme({
@@ -151,64 +152,33 @@ const MRCForm = (props) => {
   useEffect(() => {
     // type list
     async function getMachineTypeList() {
-      const response = await fetch("/api/machine/type/list/", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-buyer": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await fetch("/api/machine/type/list/", AxiosHeader);
       const body = await response.json();
       setMachineTypeList(body);
     }
 
-    // name list
-
+    // unit list
     async function getUnits() {
-      const response = await fetch("/api/unit/name/list/", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-buyer": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await fetch("/api/unit/name/list/", AxiosHeader);
       const body = await response.json();
       setUnits(body);
     }
 
     // production line list
     async function getProductionLine() {
-      const response = await fetch("/api/production/line/list/", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-buyer": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await fetch("/api/production/line/list/", AxiosHeader);
       const body = await response.json();
       setProductionLine(body);
     }
     // planet List
     async function getPlant() {
-      const response = await fetch("/api/plant/list/", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-buyer": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await fetch("/api/plant/list/", AxiosHeader);
       const body = await response.json();
       setPlants(body);
     }
     // buyer list
     async function getBuyers() {
-      const response = await fetch("/api/buyer/list/", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-buyer": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await fetch("/api/buyer/list/", AxiosHeader);
       const body = await response.json();
       setBuyers(body);
     }
@@ -219,6 +189,38 @@ const MRCForm = (props) => {
     getPlant();
     getBuyers();
   }, []);
+
+  const deleteStyleWiseLine = async (values) => {
+    try {
+      await axios
+        .delete(
+          `/api/style-wise-line-delete/${values.id}/`,
+          values,
+          AxiosHeader
+        )
+        .then((resp) => {
+          // ToDO: adjust the update form
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteStyleWiseMachineType = async (values) => {
+    try {
+      await axios
+        .delete(
+          `/api/style-wise-machines-type-delete/${values.id}/`,
+          values,
+          AxiosHeader
+        )
+        .then((resp) => {
+          // ToDO: adjust the update form
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const addNewItem = (value) => {
     const newSWMItem = {
@@ -268,13 +270,6 @@ const MRCForm = (props) => {
 
     // Update form values with the updated SWL array
     formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
-  };
-
-  const addSWMOnChange = (e, i, fieldName) => {
-    formik.setFieldValue(
-      `swm[${i}].${fieldName}`,
-      e?.value || e?.target?.value
-    );
   };
 
   const handleLineChange = (value, swmIndex) => {
