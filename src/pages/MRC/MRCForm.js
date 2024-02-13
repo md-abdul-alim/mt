@@ -23,7 +23,6 @@ import Controls from "../../components/Controls/Controls";
 import { Autocomplete } from "@material-ui/lab";
 
 const initialFValues = {
-  id: 0,
   style: "",
   unit: "",
   plant: "",
@@ -88,7 +87,7 @@ const MRCForm = (props) => {
         MuiTableRow: {
           root: {
             "&:nth-child(even)": {
-              backgroundColor: "#89898921",
+              backgroundColor: "#89898940",
               color: "#fff",
             },
           },
@@ -250,7 +249,6 @@ const MRCForm = (props) => {
 
   const addNewSWL = (rowData, swlData, swlIndex) => {
     const newSWLItem = {
-      id: formik.values.swm[rowData?.rowIndex].swl.length + 1, // Generate a new ID for the new SWL item
       machine_type: 1,
       machine_quantity: 1,
     };
@@ -435,11 +433,11 @@ const MRCForm = (props) => {
                         <Grid
                           container
                           spacing={3}
+                          sx={{ m: 2 }}
                           style={{
-                            backgroundColor: `${isOddIndex ? "#89898921" : ""}`,
-                            borderRadius: `${isOddIndex ? "5px" : ""}`,
+                            display: "flex",
+                            alignItems: "center",
                           }}
-                          sx={{m:2}}
                         >
                           <Grid item xs={12} md={4}>
                             <Autocomplete
@@ -486,15 +484,25 @@ const MRCForm = (props) => {
                             />
                           </Grid>
                           <Grid item xs={12} md={4}>
-                            <div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                              }}
+                            >
                               {isLastItem && (
                                 <IconButton
                                   color="primary"
                                   onClick={() =>
                                     addNewSWL(tableMeta, swlItem, swlIndex)
                                   }
+                                  style={{
+                                    backgroundColor: "#019301",
+                                    color: "white",
+                                  }}
+                                  size="small"
                                 >
-                                  <AddIcon fontSize="medium" />
+                                  <AddIcon />
                                 </IconButton>
                               )}
 
@@ -503,9 +511,18 @@ const MRCForm = (props) => {
                                 onClick={() =>
                                   removeSwl(tableMeta, swlItem, swlIndex)
                                 }
+                                style={{
+                                  backgroundColor: `${
+                                    swlIndex === 0 && value?.length === 1
+                                      ? "#ff000052"
+                                      : "#e10707"
+                                  }`,
+                                  color: "white",
+                                }}
                                 disabled={swlIndex === 0 && value?.length === 1}
+                                size="small"
                               >
-                                <RemoveIcon fontSize="medium" />
+                                <RemoveIcon />
                               </IconButton>
                             </div>
                           </Grid>
@@ -527,23 +544,33 @@ const MRCForm = (props) => {
         customBodyRender: (value, tableMeta, updateValue) => {
           const isLastRow = tableMeta.rowIndex === formik.values.swm.length - 1;
           return (
-            <div style={{ display: "flex" }}>
+            <div style={{ display: "flex", gap: "10px" }}>
               {isLastRow && (
                 <IconButton
-                  color="primary"
                   onClick={() => addNewItem(tableMeta)}
+                  style={{ backgroundColor: "#019301", color: "white" }}
+                  size="small"
                 >
-                  <AddIcon fontSize="medium" />
+                  <AddIcon />
                 </IconButton>
               )}
               <IconButton
                 color="primary"
                 onClick={() => handleRemoveMrc(tableMeta)}
+                style={{
+                  backgroundColor: `${
+                    tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
+                      ? "#ff000052"
+                      : "#e10707"
+                  }`,
+                  color: "white",
+                }}
+                size="small"
                 disabled={
                   tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
                 }
               >
-                <RemoveIcon fontSize="medium" />
+                <RemoveIcon />
               </IconButton>
             </div>
           );
@@ -681,7 +708,9 @@ const MRCForm = (props) => {
                       option.id === value.id
                     }
                     value={
-                      buyers.find((buyer) => buyer.id === formik.values.buyer) ||
+                      buyers.find(
+                        (buyer) => buyer.id === formik.values.buyer
+                      ) ||
                       formik.values.buyer ||
                       null
                     }
