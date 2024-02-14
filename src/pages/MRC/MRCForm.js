@@ -22,6 +22,8 @@ import { CustomCircularProgress } from "../../components/Progress/CustomCircular
 import Controls from "../../components/Controls/Controls";
 import axios from "axios";
 import { Autocomplete } from "@material-ui/lab";
+import Confirm from "./Confirm";
+import Notification from "../../components/SnackBar/Notification";
 
 const initialFValues = {
   style: "",
@@ -60,7 +62,8 @@ const style = makeStyles({
 });
 
 const MRCForm = (props) => {
-  const { addOrEdit, recordForEdit, AxiosHeader } = props;
+  const { addOrEdit, recordForEdit, AxiosHeader, isLoading, setIsLoading } =
+    props;
 
   const getMuiTheme = () =>
     createMuiTheme({
@@ -108,6 +111,15 @@ const MRCForm = (props) => {
   const [plants, setPlants] = useState([]);
   const [buyers, setBuyers] = useState([]);
   const [units, setUnits] = useState([]);
+  const [confirmDeleteMrc, setConfirmDeleteMrc] = useState(false);
+  const [deletedMrcData, setDeletedMrcData] = useState(null);
+  const [confirmDeleteSWl, setConfirmDeleteSWL] = useState(false);
+  const [confirmDeleteSwlData, setConfirmDeleteSWlData] = useState(null);
+  const [notify, setNotify] = useState({
+    isOpen: false,
+    message: "",
+    type: "",
+  });
 
   const validationSchema = Yup.object().shape({
     style: Yup.string().required("Style is required"),
@@ -150,6 +162,9 @@ const MRCForm = (props) => {
   }, [recordForEdit]);
 
   useEffect(() => {
+    // Set loading state to true
+    setIsLoading(true);
+
     // type list
     async function getMachineTypeList() {
       const response = await fetch("/api/machine/type/list/", AxiosHeader);
@@ -183,11 +198,24 @@ const MRCForm = (props) => {
       setBuyers(body);
     }
 
-    getMachineTypeList();
-    getUnits();
-    getProductionLine();
-    getPlant();
-    getBuyers();
+    // Call all data fetching functions
+    Promise.all([
+      getMachineTypeList(),
+      getUnits(),
+      getProductionLine(),
+      getPlant(),
+      getBuyers(),
+    ])
+      .then(() => {
+        // Set loading state to false once all data fetching is done
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        // Handle errors if any
+        console.error("Error fetching data:", error);
+        // Set loading state to false to stop loading indicator in case of error
+        setIsLoading(false);
+      });
   }, []);
 
   const deleteStyleWiseLine = async (values) => {
@@ -200,6 +228,12 @@ const MRCForm = (props) => {
         )
         .then((resp) => {
           // ToDO: adjust the update form
+          setConfirmDeleteSWlData(null);
+          setNotify({
+            isOpen: true,
+            message: "Deleted Successfully",
+            type: "success",
+          });
         });
     } catch (error) {
       console.log(error);
@@ -216,6 +250,12 @@ const MRCForm = (props) => {
         )
         .then((resp) => {
           // ToDO: adjust the update form
+          setDeletedMrcData(null);
+          setNotify({
+            isOpen: true,
+            message: "Deleted Successfully",
+            type: "success",
+          });
         });
     } catch (error) {
       console.log(error);
@@ -241,6 +281,16 @@ const MRCForm = (props) => {
 
   const handleRemoveMrc = (value) => {
     // Create a new array without the item at the specified index
+    if (deletedMrcData?.rowData[0]) {
+      deleteStyleWiseMachineType({ id: deletedMrcData?.rowData[0] });
+      const updatedSWM = formik.values.swm.filter(
+        (_, idx) => idx !== value?.rowIndex
+      );
+
+      // Update form values with the updated SWM array
+      formik.setFieldValue("swm", updatedSWM);
+      return;
+    }
     const updatedSWM = formik.values.swm.filter(
       (_, idx) => idx !== value?.rowIndex
     );
@@ -262,14 +312,28 @@ const MRCForm = (props) => {
     ]);
   };
 
-  const removeSwl = (rowData, swlData, swlIndex) => {
+  const removeSwl = (value) => {
+    const rowData = value?.tableMeta;
+    const swlIndex = value?.swlIndex;
     // Create a new array without the item at the specified index
-    const updatedSWL = formik.values.swm[rowData?.rowIndex].swl.filter(
-      (_, idx) => idx !== swlIndex
+    const findSwl = formik.values.swm[rowData?.rowIndex].swl.find(
+      (_, idx) => idx === swlIndex
     );
-
-    // Update form values with the updated SWL array
-    formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
+    if (findSwl) {
+      const updatedSWL = formik.values.swm[rowData?.rowIndex].swl.filter(
+        (_, idx) => idx !== swlIndex
+      );
+      deleteStyleWiseLine({ id: findSwl?.id });
+      // // Update form values with the updated SWL array
+      formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
+      return;
+    }else{
+      const updatedSWL = formik.values.swm[rowData?.rowIndex].swl.filter(
+        (_, idx) => idx !== swlIndex
+      );
+      // // Update form values with the updated SWL array
+      formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
+    }
   };
 
   const handleLineChange = (value, swmIndex) => {
@@ -503,9 +567,16 @@ const MRCForm = (props) => {
 
                               <IconButton
                                 color="primary"
-                                onClick={() =>
-                                  removeSwl(tableMeta, swlItem, swlIndex)
-                                }
+                                onClick={() => {
+                                  console.log(tableMeta, swlItem, swlIndex);
+                                  // removeSwl(tableMeta, swlItem, swlIndex);
+                                  setConfirmDeleteSWL(true);
+                                  setConfirmDeleteSWlData({
+                                    tableMeta,
+                                    swlItem,
+                                    swlIndex,
+                                  });
+                                }}
                                 style={{
                                   backgroundColor: `${
                                     swlIndex === 0 && value?.length === 1
@@ -551,7 +622,10 @@ const MRCForm = (props) => {
               )}
               <IconButton
                 color="primary"
-                onClick={() => handleRemoveMrc(tableMeta)}
+                onClick={() => {
+                  setDeletedMrcData(tableMeta);
+                  setConfirmDeleteMrc(true);
+                }}
                 style={{
                   backgroundColor: `${
                     tableMeta?.rowIndex === 0 && formik.values.swm.length === 1
@@ -577,7 +651,7 @@ const MRCForm = (props) => {
   const options = {
     textLabels: {
       body: {
-        noMatch: false ? (
+        noMatch: isLoading ? (
           <CustomCircularProgress
             size={70}
             thickness={5}
@@ -603,7 +677,7 @@ const MRCForm = (props) => {
       <React.Fragment>
         <Grid container alignItems="flex-start" spacing={1}>
           <MuiThemeProvider theme={getMuiTheme()}>
-            <Box>
+            <Box style={{ width: "100%" }}>
               <Grid container alignItems="flex-start" spacing={1}>
                 <Grid item md={3} sm={4} xs={6}>
                   <Controls.Input
@@ -719,13 +793,23 @@ const MRCForm = (props) => {
 
                 <Grid md={12} sm={4} xs={6} item style={{ marginTop: 10 }}>
                   {/* Table */}
-                  <MUIDataTable
-                    title={"Line wise machine type"}
-                    data={formik.values.swm}
-                    columns={columns}
-                    options={options}
-                    className={classes.pageContent}
-                  />
+                  {isLoading ? (
+                    <MUIDataTable
+                      title={"Line wise machine type"}
+                      columns={columns}
+                      options={options}
+                      className={classes.pageContent}
+                    />
+                  ) : (
+                    <MUIDataTable
+                      title={"Line wise machine type"}
+                      data={formik.values.swm}
+                      columns={columns}
+                      options={options}
+                      className={classes.pageContent}
+                    />
+                  )}
+
                   <TableCell className={classes.MuiTableCell} />
                 </Grid>
 
@@ -752,6 +836,26 @@ const MRCForm = (props) => {
                 </Grid>
               </Grid>
             </Box>
+            <div>
+              <Confirm
+                open={confirmDeleteMrc}
+                setConfirmDelete={setConfirmDeleteMrc}
+                onClose={() => setConfirmDeleteMrc(false)}
+                actionText="Are you sure you want to delete"
+                onConfirm={handleRemoveMrc}
+                value={deletedMrcData}
+              />
+              {/* for swl delete */}
+              <Confirm
+                open={confirmDeleteSWl}
+                setConfirmDelete={setConfirmDeleteSWL}
+                onClose={() => setConfirmDeleteSWL(false)}
+                actionText="Are you sure you want to delete"
+                onConfirm={removeSwl}
+                value={confirmDeleteSwlData}
+              />
+            </div>
+            <Notification notify={notify} setNotify={setNotify} />
           </MuiThemeProvider>
         </Grid>
       </React.Fragment>

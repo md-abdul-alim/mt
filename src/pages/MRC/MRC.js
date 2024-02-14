@@ -35,6 +35,7 @@ import MRCForm from "./MRCForm";
 
 import { makeStyles, TableCell, Tooltip } from "@material-ui/core";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
+import Confirm from "./Confirm";
 
 const useStyles = makeStyles((theme) => ({
   pageContent: {
@@ -91,6 +92,7 @@ function MRC() {
   const [isLoading, setIsLoading] = useState(false);
   const [recordForEdit, setRecordForEdit] = useState(null);
   const [searchValue, setSearchValue] = useState(null);
+  const [deletedItem, setDeletedItem] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [records, setRecords] = useState(null);
   const [fabricRecord, setFabricRecord] = useState(null);
@@ -100,7 +102,7 @@ function MRC() {
     },
   });
   const [openPopup, setOpenPopup] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [upload, setUpload] = useState(false);
   const [MachineList, setMachineList] = useState([]);
   const [fiber, setFiber] = useState([]);
@@ -180,7 +182,7 @@ function MRC() {
   };
 
   const updateStyleWiseMachine = async (values, setSubmitting) => {
-    console.log("Updated data: ", values)
+    console.log("Updated data: ", values);
     try {
       await axios
         .put(
@@ -208,6 +210,12 @@ function MRC() {
         )
         .then((resp) => {
           fetchStyleWiseMachines();
+          setDeletedItem(null);
+          setNotify({
+            isOpen: true,
+            message: "Deleted Successfully",
+            type: "success",
+          });
         });
     } catch (error) {
       console.log(error);
@@ -294,7 +302,9 @@ function MRC() {
               <IconButton
                 onClick={() => {
                   if (user_type === "Admin") {
-                    deleteStyleWiseMachine(item);
+                    // deleteStyleWiseMachine(item);
+                    setConfirmDelete(true);
+                    handleDelete(item);
                   } else {
                     alert("You have no delete permission");
                   }
@@ -318,6 +328,18 @@ function MRC() {
       },
     },
   ];
+
+  const handleDelete = (item) => {
+    setDeletedItem(item);
+    setConfirmDelete(true);
+  };
+
+  const confirmDeleteMrc = () => {
+    if (deletedItem) {
+      deleteStyleWiseMachine(deletedItem);
+    }
+    setConfirmDelete(!confirmDelete);
+  };
 
   const addOrEdit = (style, resetForm, setSubmitting) => {
     console.log("data: ", style);
@@ -405,8 +427,21 @@ function MRC() {
               openPopup={openPopup}
               setOpenPopup={setOpenPopup}
             >
-              <MRCForm recordForEdit={recordForEdit} addOrEdit={addOrEdit} AxiosHeader={AxiosHeader}/>
+              <MRCForm
+                recordForEdit={recordForEdit}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+                addOrEdit={addOrEdit}
+                AxiosHeader={AxiosHeader}
+              />
             </Popup>
+            <Confirm
+              open={confirmDelete}
+              setConfirmDelete={setConfirmDelete}
+              onClose={() => setConfirmDelete(false)}
+              actionText="Are you sure you want to delete"
+              onConfirm={confirmDeleteMrc}
+            />
             <Notification notify={notify} setNotify={setNotify} />
           </div>
         </MuiThemeProvider>
