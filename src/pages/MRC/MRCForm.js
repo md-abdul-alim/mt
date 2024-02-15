@@ -26,6 +26,7 @@ import Confirm from "./Confirm";
 import Notification from "../../components/SnackBar/Notification";
 
 const initialFValues = {
+  id: "",
   style: "",
   unit: "",
   plant: "",
