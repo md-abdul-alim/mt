@@ -29,10 +29,10 @@ import {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="secondary">
+          <Button onClick={onClose} color="secondary" style={{ backgroundColor: "#019301", color: "white" }}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} color="primary">
+          <Button onClick={handleConfirm} color="primary" style={{ backgroundColor: "#e10707", color: "white" }}>
             Confirm
           </Button>
         </DialogActions>

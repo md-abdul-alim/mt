@@ -26,20 +26,17 @@ import Confirm from "./Confirm";
 import Notification from "../../components/SnackBar/Notification";
 
 const initialFValues = {
-  id: "",
   style: "",
   unit: "",
   plant: "",
   buyer: "",
   swm: [
     {
-      id: "",
       line: "",
       start_date: new Date(),
       end_date: new Date(),
       swl: [
         {
-          id: "",
           machine_type: "",
           machine_quantity: "",
         },

@@ -343,7 +343,7 @@ function MRC() {
 
   const addOrEdit = (style, resetForm, setSubmitting) => {
     console.log("data: ", style);
-    if (style.id == 0) postStyleWiseMachine(style, setSubmitting);
+    if (!style.id) postStyleWiseMachine(style, setSubmitting);
     else updateStyleWiseMachine(style, setSubmitting);
     resetForm();
     setRecordForEdit(null);
