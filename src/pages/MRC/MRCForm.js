@@ -282,7 +282,7 @@ const MRCForm = (props) => {
   const handleRemoveMrc = (value) => {
     // Create a new array without the item at the specified index
     if (deletedMrcData?.rowData[0]) {
-      deleteStyleWiseMachineType({ id: deletedMrcData?.rowData[0] });
+      deleteStyleWiseLine({ id: deletedMrcData?.rowData[0] });
       const updatedSWM = formik.values.swm.filter(
         (_, idx) => idx !== value?.rowIndex
       );
@@ -323,7 +323,7 @@ const MRCForm = (props) => {
       const updatedSWL = formik.values.swm[rowData?.rowIndex].swl.filter(
         (_, idx) => idx !== swlIndex
       );
-      deleteStyleWiseLine({ id: findSwl?.id });
+      deleteStyleWiseMachineType({ id: findSwl?.id });
       // // Update form values with the updated SWL array
       formik.setFieldValue(`swm[${rowData?.rowIndex}].swl`, updatedSWL);
       return;
@@ -841,7 +841,7 @@ const MRCForm = (props) => {
                 open={confirmDeleteMrc}
                 setConfirmDelete={setConfirmDeleteMrc}
                 onClose={() => setConfirmDeleteMrc(false)}
-                actionText="Are you sure you want to delete"
+                actionText="delete"
                 onConfirm={handleRemoveMrc}
                 value={deletedMrcData}
               />
@@ -850,7 +850,7 @@ const MRCForm = (props) => {
                 open={confirmDeleteSWl}
                 setConfirmDelete={setConfirmDeleteSWL}
                 onClose={() => setConfirmDeleteSWL(false)}
-                actionText="Are you sure you want to delete"
+                actionText="delete"
                 onConfirm={removeSwl}
                 value={confirmDeleteSwlData}
               />
