@@ -289,7 +289,7 @@ function MRC() {
               <IconButton
                 color="primary"
                 onClick={() => {
-                  if (user_type === "Admin") {
+                  if (user_type === "Admin" || "IE Coordinate") {
                     openInPopup(item);
                   } else {
                     alert("You have no update permission");
@@ -301,7 +301,7 @@ function MRC() {
               </IconButton>
               <IconButton
                 onClick={() => {
-                  if (user_type === "Admin") {
+                  if (user_type === "Admin" || user_type === "IE Coordinate") {
                     // deleteStyleWiseMachine(item);
                     setConfirmDelete(true);
                     handleDelete(item);
@@ -312,7 +312,7 @@ function MRC() {
               >
                 <DeleteIcon color="error" fontSize="medium" />
               </IconButton>
-              <Link
+              {/* <Link
                 to={{
                   pathname: "/app/machine/details",
                   state: item.id,
@@ -321,7 +321,7 @@ function MRC() {
                 <IconButton color="primary">
                   <ArrowRightAltIcon fontSize="medium" />
                 </IconButton>
-              </Link>
+              </Link> */}
             </>
           );
         },
