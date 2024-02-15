@@ -439,7 +439,7 @@ function MRC() {
               open={confirmDelete}
               setConfirmDelete={setConfirmDelete}
               onClose={() => setConfirmDelete(false)}
-              actionText="Are you sure you want to delete"
+              actionText="delete"
               onConfirm={confirmDeleteMrc}
             />
             <Notification notify={notify} setNotify={setNotify} />
